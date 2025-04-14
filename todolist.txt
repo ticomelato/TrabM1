@@ -1,0 +1,3 @@
+Impedir que sejam feitos INSERTS com id já existente
+Revisar que as threads atendem o solicitado pelo professor
+Opcional: Implementar as funções extras (DELET e SELECT)
