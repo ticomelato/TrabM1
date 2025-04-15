@@ -9,6 +9,40 @@
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
+HANDLE* filaTarefas[256];
+int qtdTarefas = 0;
+
+pthread_mutex_t filaMutex;
+pthread_cond_t filaCond;
+
+void preparar_tarefa(HANDLE* hPipeArg) {
+    pthread_mutex_lock(&filaMutex);
+    filaTarefas[qtdTarefas] = hPipeArg;
+    qtdTarefas++;
+    pthread_mutex_unlock(&filaMutex);
+    pthread_cond_signal(&filaCond);
+}
+
+void* iniciar_thread(void* args) {
+    while (1) {
+        HANDLE* hPipeArg;
+
+        pthread_mutex_lock(&filaMutex);
+        while (qtdTarefas == 0) {
+            pthread_cond_wait(&filaCond, &filaMutex);
+        }
+
+        hPipeArg = filaTarefas[0];
+        int i;
+        for (i = 0; i < qtdTarefas - 1; i++) {
+            filaTarefas[i] = filaTarefas[i + 1];
+        }
+        qtdTarefas--;
+        pthread_mutex_unlock(&filaMutex);
+        processar_requisicao(hPipeArg);
+    }
+}
+
 void* processar_requisicao(void* arg) {
     HANDLE hPipe = *(HANDLE*)arg;
     free(arg); // liberar a memória alocada para o HANDLE
@@ -111,6 +145,16 @@ void* processar_requisicao(void* arg) {
 }
 
 int main() {
+    pthread_t thPool[THREAD_NUM];
+    pthread_mutex_init(&filaMutex, NULL);
+    pthread_cond_init(&filaCond, NULL);
+
+    for (int i = 0; i < THREAD_NUM; i++) {
+        if (pthread_create(&thPool[i], NULL, &iniciar_thread, NULL) != 0) {
+            perror("Nao foi possivel criar a thread.");
+        }
+    }
+
     HANDLE hPipe;
 
     printf("Servidor iniciado. Aguardando conexoes...\n");
@@ -144,10 +188,17 @@ int main() {
         HANDLE* hPipeArg = malloc(sizeof(HANDLE));
         *hPipeArg = hPipe;
 
-        pthread_t tid;
-        pthread_create(&tid, NULL, processar_requisicao, hPipeArg);
-        pthread_detach(tid); // thread destacada, não precisamos dar join
+        preparar_tarefa(hPipeArg);
     }
+
+    for (int i = 0; i < THREAD_NUM; i++) {
+        if (pthread_join(thPool[i], NULL) != 0) {
+            perror("Nao foi possivel juntar a thread.");
+        }
+    }
+
+    pthread_mutex_destroy(&filaMutex);
+    pthread_cond_destroy(&filaCond);
 
     return 0;
 }

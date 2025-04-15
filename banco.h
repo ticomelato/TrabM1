@@ -3,6 +3,8 @@
 
 #include <pthread.h>
 
+#define THREAD_NUM 4
+
 #define BANCO_TXT "banco.txt"
 
 typedef struct {
@@ -12,6 +14,7 @@ typedef struct {
 
 extern pthread_mutex_t mutex;
 
+void* iniciar_thread(void* args);
 void* processar_requisicao(void* arg);
 
 #endif
