@@ -112,8 +112,8 @@ void* processar_requisicao(void* arg) {
             fclose(banco);
 
             if (encontrado) {
-                printf("Registro encontrado: %s", linha);
-                strcpy(buffer, linha);
+                printf("Registro com ID %d encontrado: %s\n", id, r.nome);
+                strcpy(buffer, r.nome);
             } else {
                 printf("ID %d nao encontrado.\n", id);
                 strcpy(buffer, "ID nao encontrado.");
@@ -122,6 +122,47 @@ void* processar_requisicao(void* arg) {
             printf("Erro ao abrir banco.txt\n");
             strcpy(buffer, "Erro ao acessar o banco.");
         }
+        pthread_mutex_unlock(&mutex);
+    }
+    else if (sscanf(buffer, "UPDATE %d %[^\n]", &id, nome) == 2) {
+        pthread_mutex_lock(&mutex);
+        FILE* banco = fopen("banco.txt", "r");
+        FILE* temp = fopen("temp.txt", "w");
+        if (!banco || !temp) {
+            printf("Erro ao abrir arquivos.\n");
+            strcpy(buffer, "Erro ao acessar os arquivos.");
+            pthread_mutex_unlock(&mutex);
+            CloseHandle(hPipe);
+            return NULL;
+        }
+
+        char linha[100];
+        int encontrado = 0;
+        Registro r;
+
+        while (fgets(linha, sizeof(linha), banco)) {
+            sscanf(linha, "%d|%[^\n]", &r.id, r.nome);
+            if (r.id != id) {
+                fprintf(temp, "%s", linha);
+            } else {
+                fprintf(temp, "%d|%s\n", id, nome);
+                encontrado = 1;
+            }
+        }
+
+        fclose(banco);
+        fclose(temp);
+        remove("banco.txt");
+        rename("temp.txt", "banco.txt");
+
+        if (encontrado) {
+            printf("Registro atualizado: %d | %s\n", id, nome);
+            strcpy(buffer, "Registro atualizado com sucesso.");
+        } else {
+            printf("ID %d nao encontrado.\n", id);
+            strcpy(buffer, "ID nao encontrado.");
+        }
+
         pthread_mutex_unlock(&mutex);
     }
     else if (sscanf(buffer, "DELETE %d", &id) == 1) {

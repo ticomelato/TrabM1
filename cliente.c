@@ -21,7 +21,8 @@ int main() {
     printf("\nDigite uma operacao:\n");
     printf("1: INSERT\n");
     printf("2: SELECT\n");
-    printf("3: DELETE\n");
+    printf("3: UPDATE\n");
+    printf("4: DELETE\n");
     printf("0: SAIR\n\n");
     scanf("%d", &op);
     getchar();
@@ -39,16 +40,29 @@ int main() {
 
     } else if (op == 2) {
       int id;
-      printf("SELECT id=");
+      printf("SELECT nome WHERE id=");
       scanf("%d", &id);
       getchar();
       snprintf(buffer, BUFFER_SIZE, "SELECT %d", id);
+
     } else if (op == 3) {
+      int id;
+      char nome[50];
+      printf("UPDATE SET nome=", nome);
+      fgets(nome, sizeof(nome), stdin);
+      nome[strcspn(nome, "\n")] = 0;
+      printf("UPDATE SET nome=%s WHERE id=", nome);
+      scanf("%d", &id);
+      getchar();
+      snprintf(buffer, BUFFER_SIZE, "UPDATE %d %s", id, nome);
+
+    } else if (op == 4) {
       int id;
       printf("DELETE id=");
       scanf("%d", &id);
       getchar();
       snprintf(buffer, BUFFER_SIZE, "DELETE %d", id);
+
     } else if (op == 0) {
       break;
 
