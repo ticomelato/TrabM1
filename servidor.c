@@ -28,12 +28,31 @@ void* processar_requisicao(void* arg) {
 
     if (sscanf(buffer, "INSERT %d %[^\n]", &id, nome) == 2) {
         pthread_mutex_lock(&mutex);
-        FILE* banco = fopen("banco.txt", "a");
+        FILE* banco = fopen("banco.txt", "a+");
         if (banco) {
-            fprintf(banco, "%d|%s\n", id, nome);
-            printf("Registro adicionado: %d | %s\n", id, nome);
+            rewind(banco); // volta para o início
+
+            char linha[100];
+            int idExiste = 0;
+            Registro r;
+
+            // Verifica se o ID do registro a ser adicionado já existe no banco
+            while (fgets(linha, sizeof(linha), banco)) {
+                sscanf(linha, "%d|%[^\n]", &r.id, r.nome);
+                if (r.id == id) {
+                    idExiste = 1;
+                    printf("Registro com ID %d ja existe.\n", id);
+                    strcpy(buffer, "ID ja existente.");
+                }
+            }
+
+            if (!idExiste) {
+                fprintf(banco, "%d|%s\n", id, nome);
+                printf("Registro adicionado: %d | %s\n", id, nome);
+                strcpy(buffer, "Registro inserido com sucesso.");
+            }
+
             fclose(banco);
-            strcpy(buffer, "Registro inserido com sucesso.");
         } else {
             printf("Erro ao abrir banco.txt\n");
             strcpy(buffer, "Erro ao acessar o banco.");
@@ -74,15 +93,15 @@ void* processar_requisicao(void* arg) {
             printf("Registro com ID %d removido.\n", id);
             strcpy(buffer, "Registro removido com sucesso.");
         } else {
-            printf("ID %d não encontrado.\n", id);
-            strcpy(buffer, "ID não encontrado.");
+            printf("ID %d nao encontrado.\n", id);
+            strcpy(buffer, "ID nao encontrado.");
         }
 
         pthread_mutex_unlock(&mutex);
     }
     else {
-        printf("Comando inválido: %s\n", buffer);
-        strcpy(buffer, "Comando inválido.");
+        printf("Comando invalido: %s\n", buffer);
+        strcpy(buffer, "Comando invalido.");
     }
 
     // Enviar resposta ao cliente
