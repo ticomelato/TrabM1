@@ -20,7 +20,8 @@ int main() {
   while (1) {
     printf("\nDigite uma operacao:\n");
     printf("1: INSERT\n");
-    printf("2: DELETE\n");
+    printf("2: SELECT\n");
+    printf("3: DELETE\n");
     printf("0: SAIR\n\n");
     scanf("%d", &op);
     getchar();
@@ -37,12 +38,17 @@ int main() {
       snprintf(buffer, BUFFER_SIZE, "INSERT %d %s", id, nome);
 
     } else if (op == 2) {
-        int id;
-        printf("DELETE id=");
-        scanf("%d", &id);
-        getchar();
-        snprintf(buffer, BUFFER_SIZE, "DELETE %d", id);
-
+      int id;
+      printf("SELECT id=");
+      scanf("%d", &id);
+      getchar();
+      snprintf(buffer, BUFFER_SIZE, "SELECT %d", id);
+    } else if (op == 3) {
+      int id;
+      printf("DELETE id=");
+      scanf("%d", &id);
+      getchar();
+      snprintf(buffer, BUFFER_SIZE, "DELETE %d", id);
     } else if (op == 0) {
       break;
 

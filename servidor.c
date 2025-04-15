@@ -93,6 +93,37 @@ void* processar_requisicao(void* arg) {
         }
         pthread_mutex_unlock(&mutex);
     }
+    else if (sscanf(buffer, "SELECT %d", &id) == 1) {
+        pthread_mutex_lock(&mutex);
+        FILE* banco = fopen("banco.txt", "r");
+        if (banco) {
+            char linha[100];
+            int encontrado = 0;
+            Registro r;
+
+            while (fgets(linha, sizeof(linha), banco)) {
+                sscanf(linha, "%d|%[^\n]", &r.id, r.nome);
+                if (r.id == id) {
+                    encontrado = 1;
+                    break;
+                }
+            }
+
+            fclose(banco);
+
+            if (encontrado) {
+                printf("Registro encontrado: %s", linha);
+                strcpy(buffer, linha);
+            } else {
+                printf("ID %d nao encontrado.\n", id);
+                strcpy(buffer, "ID nao encontrado.");
+            }
+        } else {
+            printf("Erro ao abrir banco.txt\n");
+            strcpy(buffer, "Erro ao acessar o banco.");
+        }
+        pthread_mutex_unlock(&mutex);
+    }
     else if (sscanf(buffer, "DELETE %d", &id) == 1) {
         pthread_mutex_lock(&mutex);
         FILE* banco = fopen("banco.txt", "r");
