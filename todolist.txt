@@ -1,9 +1,0 @@
-Impedir que sejam feitos INSERTS com id já existente
-Revisar que as threads atendem o solicitado pelo professor
-Opcional: Implementar as funções extras (DELET e SELECT)
-
-REFERENCIAS:
-private-zinc-3e1.notion.site/Aula-2-e-3-Processos-78cfec913529427bbf5492ac1d63768f\
-https://private-zinc-3e1.notion.site/Aula-4-Threads-1511ce756101492596dba0684a51065d
-https://private-zinc-3e1.notion.site/Aula-5-Sincroniza-o-b99ecfa1ea5a4e868430f226f2903e8e
-https://github.com/VielF/SO-Codes/blob/main/Threads/thread_pool_C_ex.c
